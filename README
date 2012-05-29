@@ -1,5 +1,9 @@
+<<<<<<< HEAD
 Usage
 ======
+=======
+== Usage
+>>>>>>> d64171b12e61d1bf1c7f399756e5c6b0d95c3e36
 
     $("#upload_files").fileUpload();
 
