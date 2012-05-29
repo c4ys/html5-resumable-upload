@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>HTML5 resumable upload</title>
+        <script type="text/javascript" src="jquery.min.js"></script>
+        <script type="text/javascript" src="jquery.ui.widget.js"></script>
+        <script type="text/javascript" src="tmpl.min.js"></script>
+        <script type="text/javascript" src="fileUpload.js"></script>
+        <script>
+            $(function(){
+                $("#upload_files").fileUpload();
+            });
+        </script>
+    </head>
+    <body>
+        <input type="file" name="upload_files" id="upload_files" multiple="multiple">
+    </body>
+</html>
