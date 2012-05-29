@@ -1,0 +1,7 @@
+Usage
+======
+
+    $("#upload_files").fileUpload();
+
+
+[jQuery UI Widget](http://jqueryui.com/demos/widget/)
