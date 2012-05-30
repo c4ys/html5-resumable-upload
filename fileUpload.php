@@ -20,6 +20,7 @@ if ($transfed == ceil($size / $per_size)) {
                 @unlink($file);
             }
             file_put_contents($file, fopen("{$file}.part{$i}", 'r'), FILE_APPEND);
+            unlink("{$file}.part{$i}");
         }
     }
     unset($_SESSION["file_transfer_$hashname"]);
