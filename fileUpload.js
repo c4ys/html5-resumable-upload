@@ -5,64 +5,39 @@
             // 命名空间
             namespace: undefined,
             // 最大文件切片大小
-            maxChunkSize: 1024 * 1024 * 1
+            maxChunkSize: 1024 * 1024 * 1,
+            progress: null
         },
         _create: function() {
-            var $ = this;
+            var that = this;
+            that._files=that._que=[];
             this.element.bind('change.fileUpload', function(){
-                $._files =  $.element[0].files;
-                $._loaded =  $._total = 0;
-                $._getSequence();
-                $._send();
-            });
-        },
-        _send:function() {
-            var $ = this;
-            for(var blobIndex=0; blobIndex < $._sequence.length; blobIndex++){
-                var quence = $._sequence[blobIndex];
-                var file = $._files[quence.fileIndex];
-                var chunk = file.webkitSlice(quence.start, quence.end);
-                var xhr =  new XMLHttpRequest();
-                console.log(blobIndex);
-                var handler = function(e) {
-                    console.log(e,blobIndex);
-                }
-                xhr.upload.addEventListener("progress", handler, false);
-                xhr.open("POST", "fileUpload.php?num=" + quence.part + "&file="+ file.name + "&size="+ file.size + "&per_size="+ this.options.maxChunkSize);
-                xhr.send(chunk);
-            }
-        },
-        _progress:function(e,blobIndex){
-            var $ = this;
-            $._sequence[blobIndex].loaded = e.loaded;
-            var loaded = 0;
-            $.each($._sequence, function(index, value) { 
-                loaded += value.loaded;
-            });
-        },
-        _getSequence: function(){
-            var files = this._files;
-            this._sequence = [];
-            for(var index = 0; index < files.length; index++){
-                var file = this._files[index];
-                var start = 0;
-                var end = this.options.maxChunkSize;
-                var part = 1;
-                while( start < file.size ) {
-                    this._sequence.push({
-                        fileIndex:index,
-                        part:part,
-                        start:start,
-                        end:end,
+                var files = this.files;
+                // 取得每个文件当前的服务器路径
+                for(i=0; i<files.length; i++) {
+                    var file = files[i];
+                    that._files.push({
+                        lastModifiedDate: Math.ceil(file.lastModifiedDate.getTime()/1000),
+                        name: file.name,
+                        size: file.size,
                         loaded:0
                     });
-                    part++;
-                    start = end;
-                    end = start + this.options.maxChunkSize;
                 }
-                this._total += file.size;
-            }
-            return this._sequence;
+                $.ajax({
+                    url:"fileUpload.php",
+                    data: {
+                        action: 'init',
+                        files: that._files
+                    },
+                    type:'POST',
+                    dataType: 'json',
+                    success:function(json) {
+                        
+                    }
+                });
+                // 
+            });
         }
+        
     });
 })(jQuery);
