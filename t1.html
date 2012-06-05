@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>HTML5 resumable upload</title>
+        <script type="text/javascript" src="jquery.min.js"></script>
+        <script type="text/javascript" src="jquery.ui.widget.js"></script>
+        <script type="text/javascript" src="tmpl.min.js"></script>
+        <script>
+            $(function(){
+                $("#upload_files").change(function() {
+                    var files = this.files;
+                    for(var i=0; i<files.length; i++) {
+                        console.log(this.files);
+                        var file = files[i],
+                        part = 0,
+                        start = 0,
+                        trunk_size = 1024*1024*2,
+                        end = 0,
+                        length = trunk_size;
+                        while( start < file.size ) {
+                            part++;
+                            end = start + trunk_size;
+                            if(end > file.size) {
+                                end = file.size;
+                            }
+                            length = end - start;
+                            var xhr =  new XMLHttpRequest();
+                            console.log(start,length);
+                            xhr.open("POST", "t1.php?part=" + part + "&file="+ file.name + "&length="+ length + "&start="+ start,false);
+                            xhr.send(file.webkitSlice(start, end));
+                            start = end;
+                        }
+                    }
+                });
+            });
+        </script>
+    </head>
+    <body>
+        <input type="file" name="upload_files" id="upload_files" multiple="multiple">
+    </body>
+</html>
