@@ -10,11 +10,10 @@
                 $("#upload_files").change(function() {
                     var files = this.files;
                     for(var i=0; i<files.length; i++) {
-                        console.log(this.files);
                         var file = files[i],
                         part = 0,
                         start = 0,
-                        trunk_size = 1024*1024*2,
+                        trunk_size = 1024*1024*10,
                         end = 0,
                         length = trunk_size;
                         while( start < file.size ) {
@@ -25,8 +24,27 @@
                             }
                             length = end - start;
                             var xhr =  new XMLHttpRequest();
-                            console.log(start,length);
-                            xhr.open("POST", "t1.php?part=" + part + "&file="+ file.name + "&length="+ length + "&start="+ start,false);
+                            xhr.upload.addEventListener("progress", function(e){
+                                // 当前文件的
+                                //console.log("progress:"+e.loaded/e.total);
+                            }, false);
+                            xhr.addEventListener("load", function(e){
+                                var resp = e.target.responseText;
+                                // console.log(resp);
+                                try {
+                                    var json = JSON.parse(resp);
+                                    if(json.error) {
+                                        throw json.msg;
+                                    }
+                                } catch (err) {
+                                    if(typeof(err)=='string') {
+                                        console.log(err);
+                                    } else {
+                                        console.log(err.message);
+                                    }
+                                }
+                            }, false);
+                            xhr.open("POST", "t1.php?part=" + part + "&file="+ file.name + "&length="+ length + "&start="+ start);
                             xhr.send(file.webkitSlice(start, end));
                             start = end;
                         }

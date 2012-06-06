@@ -5,13 +5,15 @@ try {
     $time = time();
     while (!($dest = @fopen('upload/' . $_GET['file'], 'cb'))) {
         if (time() - $time > 30) {
-            break;
+            header("Status:504 Gateway Timeout");
+            exit;
         }
     }
-    fseek($dest, $_GET['start']);
+    $p = fseek($dest, $_GET['start']);
     stream_copy_to_stream($src, $dest, $_GET['length']);
     fclose($dest);
-    exit(json_encode(array('error' => 0)));
+    exit(json_encode(array('error' => 0, 'p' => $p)));
 } catch (Exception $e) {
-    exit(json_encode(array('error' => 1, 'msg' => $e->getMessage())));
+    header("Status:500 Internal Server Error");
+    exit;
 }
