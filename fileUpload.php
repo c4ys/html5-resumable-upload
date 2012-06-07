@@ -10,15 +10,19 @@ if ($action == 'init') {
     $files = $_POST['files'];
     $return = array();
     foreach ($files as $v) {
-        if (file_exists($upload_dir . $v['name'])) {
-            if (filesize($upload_dir . $v['name']) == $v['size']) {
-                $return[] = false;
+        if (isset($_POST['cover']) && $_POST['cover']) {
+            $return[] = true;
+        } else {
+            if (file_exists($upload_dir . $v['name'])) {
+                if (filesize($upload_dir . $v['name']) == $v['size']) {
+                    $return[] = false;
+                } else {
+                    @unlink($upload_dir . $v['name']);
+                    $return[] = true;
+                }
             } else {
-                @unlink($upload_dir . $v['name']);
                 $return[] = true;
             }
-        } else {
-            $return[] = true;
         }
     }
     exit(json_encode($return));
