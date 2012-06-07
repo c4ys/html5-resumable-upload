@@ -4,4 +4,80 @@ Usage
     $("#upload_files").fileUpload();
 
 
-[jQuery UI Widget](http://jqueryui.com/demos/widget/)
+Features
+======
+
+ - 支持一次上传多个文件
+ - 大文件自动分片上传，可以设置分片尺寸
+ - 点击上传后，如果是图像，显示缩略图，缩略图大小可以配置
+ - 上传过程中可以获取当个文件的进度以及总进度
+ - 分片上传失败自动重传（如果服务器端返回JSON错误代码则直接显示错误信息，并不再重试）
+ - 上传过程中可以取消单个或整个上传（正在上传：中断上传并通知服务器删除；上传成功：通知服务器删除；未上传:直接忽略）
+
+
+Flow
+======
+
+ 1. 客户端上传文件前先发送文件的大小，最后修改时间，文件名到服务器。服务器检查文件无修改则返回false，否则返回true
+ 2. 客户端将文件根据配置中的chunk_size切片并上传，发送时需要附加start,length,name,size,lastModified。上传过程中实时更新总进度和当个文件进度。
+ 3. 删除文件直接发送tempname
+
+Server API
+======
+
+init request
+------
+
+**url** server.php?action=init
+
+**method** post
+
+**data** 
+
+    [{name:name1,size:size1,lastModified:lastModified1},{name:name2,size:size2,lastModified:lastModified2},...]
+
+
+init response
+------
+
+**type** json
+
+**error** int 0 or other
+
+**msg** string
+
+**data** 
+ 
+    [true,false,true,...]
+
+
+upload request
+------
+
+**url** server.php?action=upload&part=part&start=start&length=length&size=size&lastModified=lastModified&name=name
+
+**method** post
+
+**data** binary rawpost
+
+
+upload response
+------
+
+**data** 
+
+    {error:0}
+
+
+delete request
+------
+
+**url** server.php?action=delete&size=size&lastModified=lastModified&name=name
+
+**method** delete
+
+
+References
+======
+
+ - [jQuery UI Widget](http://jqueryui.com/demos/widget/)
