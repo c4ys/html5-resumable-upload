@@ -59,7 +59,7 @@
             trunk_size = this.options.maxChunkSize,
             end = 0,
             length = trunk_size;
-            var chunks = [];
+            var chunks = [], chunksCount = 0;
             while( start < file.size ) {
                 (function(i) {
                     end = start + trunk_size;
@@ -85,6 +85,11 @@
                             var json = JSON.parse(resp);
                             if(json.error) {
                                 throw json.msg;
+                            }
+                            chunksCount++;
+                            if(chunksCount === part) {
+                                $("meter").val(100);
+                                $("var").text(100);
                             }
                         } catch (err) {
                             if(typeof(err)=='string') {
