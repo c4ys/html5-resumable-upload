@@ -80,4 +80,27 @@ delete request
 References
 ======
 
- - [jQuery UI Widget](http://jqueryui.com/demos/widget/)
+ - [通过HTML5来上传文件教程](http://www.open-open.com/news/view/7f40ac)
+ - [使用Html5的WebSocket在浏览器上传文件](http://www.cnblogs.com/myfjd/archive/2012/03/22/2411374.html)
+ - [使用Html5的WebSocket在浏览器上传多文件和大文件](http://www.haogongju.net/art/1364571)
+ - [How to Use HTML5 File Drag &amp Drop](http://www.sitepoint.com/html5-file-drag-and-drop/)
+ - [How to Open Dropped Files Using HTML5 and JavaScript](http://www.sitepoint.com/html5-javascript-open-dropped-files)
+ - [How to Asynchronously Upload Files Using HTML5 and Ajax](http://www.sitepoint.com/html5-ajax-file-upload)
+ - [How to Create Graphical File Upload Progress Bars in HTML5 and JavaScript](http://www.sitepoint.com/html5-javascript-file-upload-progress-bar)
+ - [HTML5 ROCKS file_access](http://www.html5rocks.com/zh/tutorials/#technology:file_access)
+ - [HTML5 Drag and Drop Multiple File Upload](http://www.appelsiini.net/2009/10/html5-drag-and-drop-multiple-file-upload)
+ - [uploading a file in chunks using html5](http://stackoverflow.com/questions/7853467/uploading-a-file-in-chunks-using-html5)
+ - [Webiny file upload with HTML5 and AJAX using PHP streams](http://www.webiny.com/blog/2012/05/07/webiny-file-upload-with-html5-and-ajax-using-php-streams/)
+ - [how to send binary strings with ajax to php - including html5 file api - blob slice](http://stackoverflow.com/questions/4664421/how-to-send-binary-strings-with-ajax-to-php-including-html5-file-api-blob-sl)
+ - [HTML5 slice, the result file is corrupted](http://stackoverflow.com/questions/9690183/html5-slice-the-result-file-is-corrupted)
+ - [READING FILES IN JAVASCRIPT USING THE FILE APIS](http://www.html5rocks.com/en/tutorials/file/dndfiles/)
+ - [Using files from web applications](https://developer.mozilla.org/en/Using_files_from_web_applications)
+ - [https://github.com/valums/file-uploader]
+ - [https://github.com/newbamboo/rack-raw-upload]
+ - [Resumable Media Uploads in the Google Data Protocol](https://developers.google.com/gdata/docs/resumable_upload?hl=zh-CN)
+ - [Resumable Http Requests Proposal](http://code.google.com/p/gears/wiki/ResumableHttpRequestsProposal)
+ - [https://github.com/blueimp/jQuery-File-Upload]
+ - [https://github.com/23/resumable.js]
+ - [http://slides.html5rocks.com/]
+ - [Resumable, asynchronous file uploads using WebSockets in HTML 5 compliant browsers](https://github.com/thirtysixthspan/waterunderice)
+ - [A demo of the new file upload progress monitoring functionality which is included in PHP5.4](https://github.com/chemicaloliver/PHP-5.4-Upload-Progress-Example)

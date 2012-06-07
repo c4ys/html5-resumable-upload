@@ -6,15 +6,16 @@ $upload_dir = "upload/";
 
 $action = $_GET['action'];
 if ($action == 'init') {
-    // 初始化上传
+    // cover=false时，如果文件名、大小，修改时间都一样，则返回false，其他都返回true，表示文件有修改，需要重传。
     $files = $_POST['files'];
     $return = array();
     foreach ($files as $v) {
         if (isset($_POST['cover']) && $_POST['cover']) {
+            @unlink($upload_dir . $v['name']);
             $return[] = true;
         } else {
             if (file_exists($upload_dir . $v['name'])) {
-                if (filesize($upload_dir . $v['name']) == $v['size']) {
+                if (filesize($upload_dir . $v['name']) == $v['size'] && filemtime($upload_dir . $v['name']) == $v['lastModified']) {
                     $return[] = false;
                 } else {
                     @unlink($upload_dir . $v['name']);
@@ -34,6 +35,7 @@ if ($action == 'init') {
             fseek($dest, $_GET['start']);
             stream_copy_to_stream($src, $dest, $_GET['length']);
             fclose($dest);
+            touch($upload_dir . $_GET['name'], $_GET['lastModified']);
         }
         exit(json_encode(array('error' => 0)));
     } catch (Exception $e) {
