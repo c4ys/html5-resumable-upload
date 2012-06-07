@@ -20,7 +20,7 @@ Flow
 
  1. 客户端上传文件前先发送文件的大小，最后修改时间，文件名到服务器。服务器检查文件无修改则返回false，否则返回true
  2. 客户端将文件根据配置中的chunk_size切片并上传，发送时需要附加start,length,name,size,lastModified。上传过程中实时更新总进度和当个文件进度。
- 3. 删除文件直接发送tempname
+ 3. 上传中的文件可以删除
 
 Server API
 ======
@@ -74,7 +74,7 @@ delete request
 
 **url** server.php?action=delete&size=size&lastModified=lastModified&name=name
 
-**method** delete
+**method** post
 
 
 References
