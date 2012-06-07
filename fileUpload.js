@@ -1,7 +1,8 @@
-;
+
 (function($){
     $.widget('ui.fileUpload', {
         options: {
+            cover: true,
             // 最大文件切片大小
             maxChunkSize: 1024 * 1024 * 1,
             // 自动开始上传
@@ -35,6 +36,7 @@
             $.ajax({
                 url:"fileUpload.php?action=init",
                 data: {
+                    cover: that.options.cover,
                     files: that._status
                 },
                 type:'POST',
@@ -54,43 +56,54 @@
             var file = this._files[i],
             part = 0,
             start = 0,
-            trunk_size = 1024*1024*10,
+            trunk_size = this.options.maxChunkSize,
             end = 0,
             length = trunk_size;
+            var chunks = [];
             while( start < file.size ) {
-                part++;
-                end = start + trunk_size;
-                if(end > file.size) {
-                    end = file.size;
-                }
-                length = end - start;
-                var xhr =  new XMLHttpRequest();
-                xhr.upload.addEventListener("progress", function(e){
-                    console.log("progress:"+e.loaded/e.total);
-                }, false);
-                xhr.addEventListener("load", function(e){
-                    var resp = e.target.responseText;
-                    try {
-                        var json = JSON.parse(resp);
-                        if(json.error) {
-                            throw json.msg;
-                        }
-                    } catch (err) {
-                        if(typeof(err)=='string') {
-                            console.log(err);
-                        } else {
-                            console.log(err.message);
-                        }
+                (function(i) {
+                    end = start + trunk_size;
+                    if(end > file.size) {
+                        end = file.size;
                     }
-                }, false);
-                xhr.upload.addEventListener("error", function(e){
+                    length = end - start;
+                    var xhr =  new XMLHttpRequest();
+                    xhr.upload.addEventListener("progress", function(e){
+                        chunks[i] = e.loaded;
+                        var loaded = 0, percent;
+                        chunks.forEach(function(val) {
+                            loaded += val;
+                        });
+                        percent = 100*loaded/file.size;
+                        $("meter").val(percent);
+                        $("var").text(percent.toFixed(2));
+                        // console.log("progress: " + loaded/file.size);
                     }, false);
-                xhr.addEventListener("abort", function(e){
+                    xhr.addEventListener("load", function(e){
+                        var resp = e.target.responseText;
+                        try {
+                            var json = JSON.parse(resp);
+                            if(json.error) {
+                                throw json.msg;
+                            }
+                        } catch (err) {
+                            if(typeof(err)=='string') {
+                                console.log(err);
+                            } else {
+                                console.log(err.message);
+                            }
+                        }
                     }, false);
-                xhr.open("POST", "fileUpload.php?action=upload&name="+ file.name + "&length="+ length 
-                    + "&start="+ start + "&size="+ file.size + "&lastModified="+ Math.ceil(file.lastModifiedDate.getTime()/1000));
-                xhr.send(file.webkitSlice(start, end));
-                start = end;
+                    xhr.upload.addEventListener("error", function(e){
+                    }, false);
+                    xhr.addEventListener("abort", function(e){
+                    }, false);
+                    xhr.open("POST", "fileUpload.php?action=upload&name="+ file.name + "&length="+ length 
+                        + "&start="+ start + "&size="+ file.size + "&lastModified="+ Math.ceil(file.lastModifiedDate.getTime()/1000));
+                    xhr.send(file.webkitSlice(start, end));
+                    start = end;
+                })(part);
+                part ++;
             }
         }
         
