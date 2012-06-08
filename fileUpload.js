@@ -57,7 +57,7 @@
             part = -1,
             chunkSize = this.options.chunkSize,
             end = 0;
-            var chunks = [], chunksCount = 0;
+            var chunks = [], chunksCount = -1;
             var startTime = new Date().getTime(), timer = setInterval(function() {
                 var elapsed = [ Math.round((new Date().getTime() - startTime) / 1000), 's'];
                 if(elapsed[0] > 60) {
@@ -100,7 +100,7 @@
                                 args.callee(end);
                             } else {
                                 if(chunksCount === part) {
-                                    $("js-percent").val(100);
+                                    $(".js-percent").val(100);
                                     clearInterval(timer);
                                 }
                             }
