@@ -2,9 +2,9 @@
 (function($){
     $.widget('ui.fileUpload', {
         options: {
-            cover: true,
+            cover: false,
             // 最大文件切片大小
-            maxChunkSize: 1024 * 1024 * 1,
+            maxChunkSize: 1024 * 1024 * 10,
             // 自动开始上传
             autoStart: true
         },
@@ -29,6 +29,7 @@
             });
         },
         start:function() {
+            console.log(this.options);
             this._start();
         },
         _start : function() {
@@ -90,12 +91,6 @@
                         } catch (err) {
                             console.log('error: retrying...');
                             args.callee.apply(null, args);
-                            /*
-                            if(typeof(err)=='string') {
-                                console.log(err);
-                            } else {
-                                console.log(err.message);
-                            }*/
                         }
                     }, false);
                     xhr.open("POST", "fileUpload.php?action=upload&" + $.param({
