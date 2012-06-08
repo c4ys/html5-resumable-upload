@@ -30,6 +30,9 @@ if ($action == 'init') {
 } elseif ($action == 'upload') {
     // 上传文件片段
     try {
+        if(rand(0, 10)==1) {
+            throw new Exception('err');
+        }
         $src = fopen('php://input', 'rb');
         if ($dest = fopen($upload_dir . $_GET['name'], 'cb')) {
             fseek($dest, $_GET['start']);

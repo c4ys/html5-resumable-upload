@@ -15,7 +15,7 @@
             var that = this;
             this.element.bind('change.fileUpload', function(){
                 that._files = this.files;
-                for(var i=0; i<that._files.length; i++) {
+                for(var i = 0; i < that._files.length; i++) {
                     var file = that._files[i];
                     that._status[i]={
                         lastModified: Math.ceil(file.lastModifiedDate.getTime()/1000),
@@ -23,7 +23,7 @@
                         size: file.size
                     };
                 }
-                if(that.options.autoStart) {
+                if(that.options.autoStart && i > 0) {
                     that.start();
                 }
             });
@@ -48,38 +48,35 @@
                             that._upload(i);
                         }
                     }
-                    
                 }
             });
         },
         _upload:function(i) {
             var file = this._files[i],
+            size = file.size,
+            modifiedTime = Math.ceil(file.lastModifiedDate.getTime()/1000),
             part = 0,
             start = 0,
             trunk_size = this.options.maxChunkSize,
-            end = 0,
-            length = trunk_size;
+            end = 0;
             var chunks = [], chunksCount = 0;
-            while( start < file.size ) {
-                (function(i) {
-                    end = start + trunk_size;
-                    if(end > file.size) {
-                        end = file.size;
-                    }
-                    length = end - start;
-                    var xhr =  new XMLHttpRequest();
+            while( start < size ) {
+                end = start + trunk_size;
+                if(end > size) {
+                    end = size;
+                }
+                (function(i, start, end) {
+                    var xhr =  new XMLHttpRequest(), args = arguments;
                     xhr.upload.addEventListener("progress", function(e){
                         chunks[i] = e.loaded;
                         var loaded = 0, percent;
                         chunks.forEach(function(val) {
                             loaded += val;
                         });
-                        percent = 100*loaded/file.size;
-                        $("meter").val(percent);
-                        $("var").text(percent.toFixed(2));
-                        // console.log("progress: " + loaded/file.size);
+                        percent = (100*loaded / size).toFixed(2);
+                        $("meter, output").val(percent);
                     }, false);
-                    xhr.addEventListener("load", function(e){
+                    xhr.addEventListener("loadend", function(e){
                         var resp = e.target.responseText;
                         try {
                             var json = JSON.parse(resp);
@@ -88,29 +85,31 @@
                             }
                             chunksCount++;
                             if(chunksCount === part) {
-                                $("meter").val(100);
-                                $("var").text(100);
+                                $("meter, output").val(100);
                             }
                         } catch (err) {
+                            console.log('error: retrying...');
+                            args.callee.apply(null, args);
+                            /*
                             if(typeof(err)=='string') {
                                 console.log(err);
                             } else {
                                 console.log(err.message);
-                            }
+                            }*/
                         }
                     }, false);
-                    xhr.upload.addEventListener("error", function(e){
-                    }, false);
-                    xhr.addEventListener("abort", function(e){
-                    }, false);
-                    xhr.open("POST", "fileUpload.php?action=upload&name="+ file.name + "&length="+ length 
-                        + "&start="+ start + "&size="+ file.size + "&lastModified="+ Math.ceil(file.lastModifiedDate.getTime()/1000));
+                    xhr.open("POST", "fileUpload.php?action=upload&" + $.param({
+                        start: start,
+                        length: end - start,
+                        name: file.name,
+                        size: size,
+                        lastModified: modifiedTime
+                    }));
                     xhr.send(file.webkitSlice(start, end));
-                    start = end;
-                })(part);
-                part ++;
+                })(part, start, end);
+                start = end;
+                part++;
             }
         }
-        
     });
 })(jQuery);
