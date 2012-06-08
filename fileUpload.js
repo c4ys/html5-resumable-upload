@@ -5,23 +5,27 @@
             cover: false,
             // 文件切片大小
             chunkSize: 1024 * 1024 * 1,
+            maxFileSize: 1024 * 1024 * 1024 * 1,
+            maxFiles: 100,
             // 自动开始上传
             autoStart: true
         },
-        _files:[],
-        _status:[],
-        _que:[],
         _create: function() {
             var that = this;
             this.element.bind('change.fileUpload', function(){
-                that._files = this.files;
-                for(var i = 0; i < that._files.length; i++) {
-                    var file = that._files[i];
-                    that._status[i]={
+                that._files = [];
+                that._status = [];
+                for(var i = 0; i < this.files.length && i < that.options.maxFiles; i++) {
+                    var file = this.files[i];
+                    if(file.size > that.options.maxFileSize) {
+                        continue;
+                    }
+                    that._files.push(file);
+                    that._status.push({
                         lastModified: Math.ceil(file.lastModifiedDate.getTime()/1000),
                         name: file.name,
                         size: file.size
-                    };
+                    });
                 }
                 if(that.options.autoStart && i > 0) {
                     that.start();
