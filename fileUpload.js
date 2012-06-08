@@ -3,8 +3,8 @@
     $.widget('ui.fileUpload', {
         options: {
             cover: false,
-            // 最大文件切片大小
-            maxChunkSize: 1024 * 1024 * 10,
+            // 文件切片大小
+            chunkSize: 1024 * 1024 * 1,
             // 自动开始上传
             autoStart: true
         },
@@ -29,7 +29,6 @@
             });
         },
         start:function() {
-            console.log(this.options);
             this._start();
         },
         _start : function() {
@@ -46,36 +45,47 @@
                     for(var i=0;i<json.length;i++) {
                         that._status[i].result = json[i] ? 0 : 2; // 0,队列中，1，上传中，2，重复，2，成功，3，失败，4，已删除
                         if(that._status[i].result===0) {
-                            that._upload(i);
+                            that._upload(that._files[i]);
                         }
                     }
                 }
             });
         },
-        _upload:function(i) {
-            var file = this._files[i],
-            size = file.size,
+        _upload:function(file) {
+            var size = file.size,
             modifiedTime = Math.ceil(file.lastModifiedDate.getTime()/1000),
-            part = 0,
-            start = 0,
-            trunk_size = this.options.maxChunkSize,
+            part = -1,
+            chunkSize = this.options.chunkSize,
             end = 0;
             var chunks = [], chunksCount = 0;
-            while( start < size ) {
-                end = start + trunk_size;
-                if(end > size) {
-                    end = size;
+            var startTime = new Date().getTime(), timer = setInterval(function() {
+                var elapsed = [ Math.round((new Date().getTime() - startTime) / 1000), 's'];
+                if(elapsed[0] > 60) {
+                    elapsed.unshift('min');
+                    elapsed.unshift(Math.floor(elapsed[1]/60));
+                    elapsed[2] = elapsed[2] % 60;
                 }
-                (function(i, start, end) {
+                $(".js-time").val(elapsed.join(' '));
+            }, 999);
+            while( end < size && part < 10) {
+                part++;
+                (function(_start, _end) {
+                    if(_end === undefined) {
+                        end = _start + chunkSize;
+                        if(end > size) {
+                            end = size;
+                        }
+                        _end = end;
+                    }
                     var xhr =  new XMLHttpRequest(), args = arguments;
                     xhr.upload.addEventListener("progress", function(e){
-                        chunks[i] = e.loaded;
-                        var loaded = 0, percent;
+                        var index = Math.floor(_start / chunkSize), loaded = 0, percent;
+                        chunks[index] = e.loaded;
                         chunks.forEach(function(val) {
                             loaded += val;
                         });
                         percent = (100*loaded / size).toFixed(2);
-                        $("meter, output").val(percent);
+                        $(".js-percent").val(percent);
                     }, false);
                     xhr.addEventListener("loadend", function(e){
                         var resp = e.target.responseText;
@@ -85,25 +95,29 @@
                                 throw json.msg;
                             }
                             chunksCount++;
-                            if(chunksCount === part) {
-                                $("meter, output").val(100);
+                            if(end < size) {
+                                part++;
+                                args.callee(end);
+                            } else {
+                                if(chunksCount === part) {
+                                    $("js-percent").val(100);
+                                    clearInterval(timer);
+                                }
                             }
                         } catch (err) {
                             console.log('error: retrying...');
-                            args.callee.apply(null, args);
+                            args.callee(_start, _end);
                         }
                     }, false);
                     xhr.open("POST", "fileUpload.php?action=upload&" + $.param({
-                        start: start,
-                        length: end - start,
+                        start: _start,
+                        length: _end - _start,
                         name: file.name,
                         size: size,
                         lastModified: modifiedTime
                     }));
-                    xhr.send(file.webkitSlice(start, end));
-                })(part, start, end);
-                start = end;
-                part++;
+                    xhr.send(file.webkitSlice(_start, _end));
+                })(end);
             }
         }
     });
