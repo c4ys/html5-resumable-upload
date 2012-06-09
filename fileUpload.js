@@ -27,7 +27,7 @@
                         size: file.size
                     });
                 }
-                if(that.options.autoStart && i > 0) {
+                if(that.options.autoStart && that._files.length) {
                     that.start();
                 }
             });
@@ -61,7 +61,10 @@
             part = -1,
             chunkSize = this.options.chunkSize,
             end = 0;
-            var chunks = [], chunksCount = -1;
+            var chunks = [], chunksCount = -1,
+            progress = $('#progress_tpl').clone().removeAttr('id').appendTo("#progress_panel");
+            $('.js-name', progress).val(file.name);
+            progress.hide().show(); // force css reflow to show meter progress
             var startTime = new Date().getTime(), timer = setInterval(function() {
                 var elapsed = [ Math.round((new Date().getTime() - startTime) / 1000), 's'];
                 if(elapsed[0] > 60) {
@@ -89,7 +92,7 @@
                             loaded += val;
                         });
                         percent = (100*loaded / size).toFixed(2);
-                        $(".js-percent").val(percent);
+                        $(".js-percent", progress).val(percent);
                     }, false);
                     xhr.addEventListener("loadend", function(e){
                         var resp = e.target.responseText;
@@ -104,7 +107,7 @@
                                 args.callee(end);
                             } else {
                                 if(chunksCount === part) {
-                                    $(".js-percent").val(100);
+                                    $(".js-percent", progress).val(100);
                                     clearInterval(timer);
                                 }
                             }
