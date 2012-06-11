@@ -11,11 +11,18 @@
                 $("#upload_files").fileUpload({cover:true});
             });
         </script>
+        <style>
+            .upload-progress { position: relative; }
+
+            #progress_tpl { display: none; }
+            .upload-progress meter { width: 300px; }
+            .upload-progress .percent { position: absolute; left: 130px; font-size: 0.9em; }
+        </style>
     </head>
     <body>
         <input type="file" name="upload_files" id="upload_files" multiple="multiple">
-
-        <div><meter class="js-percent" max="100" style="width:500px" value="0" ></meter> <output class="js-percent">0</output>%
-            elapsed: <output class="js-time">0 s</output></div>
+        <div id="progress_panel">
+            <div id="progress_tpl" class="upload-progress" ><meter class="js-percent" max="100" value="0" ></meter><span class="percent"><output class="js-percent">0</output>%</span> <output class="js-name"></output></div>
+        </div>
     </body>
 </html>
