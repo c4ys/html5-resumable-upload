@@ -71,7 +71,7 @@
                 }
                 $(".js-time").val(elapsed.join(' '));
             }, 999);
-            while( end < size && part < 10) {
+            while( end < size && part < 4) {
                 part++;
                 (function(_start, _end) {
                     if(_end === undefined) {
