@@ -107,7 +107,7 @@
                     that.start();
                 } catch (err) {
                     console.log('error: retrying...', err);
-                    args.callee.apply(that, arguments);
+                    args.callee.apply(that, args);
                 }
             }, false);
             xhr.open("POST", "fileUpload.php?" + $.param({
