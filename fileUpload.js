@@ -80,7 +80,8 @@
             modifiedTime = Math.ceil(file.lastModifiedDate.getTime()/1000);
 
             if(start === 0) {
-                this.chunkLoaded = [];
+                this.chunkLoaded || (this.chunkLoaded = {});
+                this.chunkLoaded[file.name] = [];
             }
 
             var xhr =  new XMLHttpRequest(),
@@ -89,8 +90,8 @@
             xhr.upload.addEventListener("progress", function(e){
                 var index = Math.floor(start / that.options.chunkSize),
                 loaded, percent;
-                that.chunkLoaded[index] = e.loaded;
-                loaded = that.chunkLoaded.reduce(function(pre, cur) {
+                that.chunkLoaded[file.name][index] = e.loaded;
+                loaded = that.chunkLoaded[file.name].reduce(function(pre, cur) {
                     return pre + cur;
                 });
                 percent = (100*loaded / size).toFixed(2);
@@ -102,10 +103,6 @@
                     var json = JSON.parse(resp);
                     if(json.error) {
                         throw json.msg;
-                    }
-                    console.log(end, size);
-                    if(end === size) {
-                        $(".js-percent", progress).val(100);
                     }
                     that.start();
                 } catch (err) {
