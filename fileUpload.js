@@ -11,6 +11,7 @@
             autoStart: true
         },
         _create: function() {
+            this._queue = [];
             var that = this;
             this.element.bind('change.fileUpload', function(){
                 that._files = [];
@@ -28,12 +29,9 @@
                     });
                 }
                 if(that.options.autoStart && that._files.length) {
-                    that.start();
+                    that._start();
                 }
             });
-        },
-        start:function() {
-            this._start();
         },
         _start : function() {
             var that = this;
@@ -49,83 +47,81 @@
                     for(var i=0;i<json.length;i++) {
                         that._status[i].result = json[i] ? 0 : 2; // 0,队列中，1，上传中，2，重复，2，成功，3，失败，4，已删除
                         if(that._status[i].result===0) {
-                            that._upload(that._files[i]);
+                            that._prepare(that._files[i]);
                         }
+                    }
+                    i = 0;
+                    while(i++ < 4) {
+                        that.start();
                     }
                 }
             });
         },
-        _upload:function(file) {
-            var size = file.size,
-            modifiedTime = Math.ceil(file.lastModifiedDate.getTime()/1000),
-            part = -1,
-            chunkSize = this.options.chunkSize,
-            end = 0;
-            var chunks = [], chunksCount = -1,
-            progress = $('#progress_tpl').clone().removeAttr('id').appendTo("#progress_panel");
+        start: function() {
+            if(this._queue.length) {
+                this._upload.apply(this, this._queue.shift());
+            }
+        },
+        _prepare: function(file) {
+            var progress = $('#progress_tpl').clone().removeAttr('id').appendTo("#progress_panel");
             $('.js-name', progress).val(file.name);
             progress.hide().show(); // force css reflow to show meter progress
-            var startTime = new Date().getTime(), timer = setInterval(function() {
-                var elapsed = [ Math.round((new Date().getTime() - startTime) / 1000), 's'];
-                if(elapsed[0] > 60) {
-                    elapsed.unshift('min');
-                    elapsed.unshift(Math.floor(elapsed[1]/60));
-                    elapsed[2] = elapsed[2] % 60;
-                }
-                $(".js-time").val(elapsed.join(' '));
-            }, 999);
-            while( end < size && part < 4) {
-                part++;
-                (function(_start, _end) {
-                    if(_end === undefined) {
-                        end = _start + chunkSize;
-                        if(end > size) {
-                            end = size;
-                        }
-                        _end = end;
-                    }
-                    var xhr =  new XMLHttpRequest(), args = arguments;
-                    xhr.upload.addEventListener("progress", function(e){
-                        var index = Math.floor(_start / chunkSize), loaded = 0, percent;
-                        chunks[index] = e.loaded;
-                        chunks.forEach(function(val) {
-                            loaded += val;
-                        });
-                        percent = (100*loaded / size).toFixed(2);
-                        $(".js-percent", progress).val(percent);
-                    }, false);
-                    xhr.addEventListener("loadend", function(e){
-                        var resp = e.target.responseText;
-                        try {
-                            var json = JSON.parse(resp);
-                            if(json.error) {
-                                throw json.msg;
-                            }
-                            chunksCount++;
-                            if(end < size) {
-                                part++;
-                                args.callee(end);
-                            } else {
-                                if(chunksCount === part) {
-                                    $(".js-percent", progress).val(100);
-                                    clearInterval(timer);
-                                }
-                            }
-                        } catch (err) {
-                            console.log('error: retrying...');
-                            args.callee(_start, _end);
-                        }
-                    }, false);
-                    xhr.open("POST", "fileUpload.php?action=upload&" + $.param({
-                        start: _start,
-                        length: _end - _start,
-                        name: file.name,
-                        size: size,
-                        lastModified: modifiedTime
-                    }));
-                    xhr.send(file.webkitSlice(_start, _end));
-                })(end);
+
+            var start, end = 0, size = file.size;
+            while(end < size) {
+                start = end;
+                end += this.options.chunkSize;
+                end > size && (end = size);
+                this._queue.push([file, start, end, progress]);
             }
+        },
+        _upload: function(file, start, end, progress) {
+            var size = file.size,
+            modifiedTime = Math.ceil(file.lastModifiedDate.getTime()/1000);
+
+            if(start === 0) {
+                this.chunkLoaded = [];
+            }
+
+            var xhr =  new XMLHttpRequest(),
+            args = arguments,
+            that = this;
+            xhr.upload.addEventListener("progress", function(e){
+                var index = Math.floor(start / that.options.chunkSize),
+                loaded, percent;
+                that.chunkLoaded[index] = e.loaded;
+                loaded = that.chunkLoaded.reduce(function(pre, cur) {
+                    return pre + cur;
+                });
+                percent = (100*loaded / size).toFixed(2);
+                $(".js-percent", progress).val(percent);
+            }, false);
+            xhr.addEventListener("loadend", function(e){
+                var resp = e.target.responseText;
+                try {
+                    var json = JSON.parse(resp);
+                    if(json.error) {
+                        throw json.msg;
+                    }
+                    console.log(end, size);
+                    if(end === size) {
+                        $(".js-percent", progress).val(100);
+                    }
+                    that.start();
+                } catch (err) {
+                    console.log('error: retrying...', err);
+                    args.callee.apply(that, arguments);
+                }
+            }, false);
+            xhr.open("POST", "fileUpload.php?" + $.param({
+                action: 'upload',
+                start: start,
+                length: end - start,
+                name: file.name,
+                size: size,
+                lastModified: modifiedTime
+            }));
+            xhr.send(file.webkitSlice(start, end));
         }
     });
 })(jQuery);
